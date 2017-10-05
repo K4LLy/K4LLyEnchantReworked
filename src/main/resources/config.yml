@@ -1,0 +1,37 @@
+Max-Level: 30
+PROTECTION_ENVIRONMENTAL: 20
+PROTECTION_FIRE: 20
+PROTECTION_FALL: 20
+PROTECTION_EXPLOSIONS: 20
+PROTECTION_PROJECTILE: 20
+OXYGEN: 20
+WATER_WORKER: 20
+THORNS: 20
+DEPTH_STRIDER: 20
+FROST_WALKER: 20
+DAMAGE_ALL: 20
+DAMAGE_UNDEAD: 20
+DAMAGE_ARTHROPODS: 20
+KNOCKBACK: 20
+FIRE_ASPECT: 20
+LOOT_BONUS_MOBS: 20
+SWEEPING: 20
+DIG_SPEED: 20
+DURABILITY: 20
+LOOT_BONUS_BLOCKS: 20
+ARROW_DAMAGE: 20
+ARROW_KNOCKBACK: 20
+LUCK: 20
+LURE: 20
+enableTakeEnchantment: true
+enableCustomEnchantment: true
+enableXPBoost: true
+enablePoisonTouch: true
+enableWither: true
+enableFireTouch: true
+enableNightVision: true
+enableRapidFire: false
+enableInfiniteArrows: true
+XP-Boost: 20
+Poison Touch: 20
+Rapid Fire: 20
