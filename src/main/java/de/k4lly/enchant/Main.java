@@ -15,9 +15,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 
     private PluginController controller = new PluginController();
-    private final String enable = "[k4llyEnchant] Loaded " + this.getDescription().getName() + " in Version " + this.getDescription().getVersion() + " succesfully!";
-    private final String regEnchant = "[k4llyEnchant] Successfully registered all Enchantments";
-    private final String regEvent = "[k4llyEnchant] Successfully registered Events!";
+    private final String enable = "[" + this.getName() + "] Loaded " + this.getDescription().getName() + " in Version " + this.getDescription().getVersion() + " succesfully!";
+    private final String regEnchant = "[" + this.getName() + "] Successfully registered all Enchantments";
+    private final String regEvent = "[" + this.getName() + "] Successfully registered Events!";
 
     @Override
     public void onEnable() {
@@ -36,7 +36,7 @@ public class Main extends JavaPlugin {
         this.getCommand("k4llyEnchant").setExecutor(command);
         this.getCommand("kE").setExecutor(command);
         this.getCommand("kEVersion").setExecutor(commandVersion);
-        this.getCommand("kEsafemining").setExecutor(commandSafeMining);
+        //this.getCommand("kEsafemining").setExecutor(commandSafeMining);
         pluginManager.registerEvents(new Anvil(controller), this);
         pluginManager.registerEvents(new Crafting(controller), this);
         registerEnchantment(pluginManager);
@@ -46,7 +46,7 @@ public class Main extends JavaPlugin {
     private void registerRecipe() {
         if (this.getConfig().getBoolean("enableTakeEnchantment")) {
             for (Material enchItem : UtilMaterial.getEnchantableMaterial()) {
-                ShapelessRecipe sr = new ShapelessRecipe( new NamespacedKey(this, "Test"), new ItemStack(Material.ENCHANTED_BOOK, 1));
+                ShapelessRecipe sr = new ShapelessRecipe(new ItemStack(Material.ENCHANTED_BOOK, 1));
                 sr.addIngredient(Material.BOOK);
                 sr.addIngredient(Material.EXP_BOTTLE);
                 sr.addIngredient(enchItem);

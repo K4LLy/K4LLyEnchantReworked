@@ -73,9 +73,9 @@ public class UtilEnchantment {
 
     public static void combineEnchantments(PluginController controller,ItemStack leftItem, ItemStack rightItem, ResultItem resultItem) {
         if (UtilMaterial.isEnchantedBook(leftItem.getType())) {
-            combineItemWithBook(controller, leftItem, rightItem, resultItem);
-        } else if (UtilMaterial.isEnchantable(leftItem.getType()) && UtilMaterial.isEnchantedBook(rightItem.getType())) {
             combineBooks(controller, leftItem, rightItem, resultItem);
+        } else if (UtilMaterial.isEnchantable(leftItem.getType()) && UtilMaterial.isEnchantedBook(rightItem.getType())) {
+            combineItemWithBook(controller, leftItem, rightItem, resultItem);
         } else if ((UtilMaterial.isEnchantable(leftItem.getType()) && UtilMaterial.isEnchantable(rightItem.getType()))) {
             combineItems(controller, leftItem, rightItem, resultItem);
         }
@@ -89,6 +89,7 @@ public class UtilEnchantment {
             if (leftEnchantmentMeta.hasStoredEnchant(enchantment) && rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
                 if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) == rightEnchantmentMeta.getStoredEnchantLevel(enchantment) &&
                         leftEnchantmentMeta.getStoredEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
+                    System.out.println("[DEBUG] increased Enchantment.");
                     resultItem.addEnchantment(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment) + 1);
                 } else if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) >= rightEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
                     resultItem.addEnchantment(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment));

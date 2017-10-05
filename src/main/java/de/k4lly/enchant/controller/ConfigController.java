@@ -66,6 +66,6 @@ public class ConfigController {
         controller.getMain().saveDefaultConfig();
         controller.getMain().reloadConfig();
 
-        System.out.print("[k4llyEnchant] Saved Cofiguration.");
+        System.out.print("[" + controller.getMain().getName() + "] Saved Cofiguration.");
     }
 }

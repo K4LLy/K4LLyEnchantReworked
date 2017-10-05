@@ -7,9 +7,14 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Anvil implements Listener {
 
@@ -37,12 +42,12 @@ public class Anvil implements Listener {
     }
 
     public ItemStack resultItem(ItemStack leftItem, ItemStack rightItem, PrepareAnvilEvent prepareAnvilEvent) throws Exception {
-        ResultItem resultItem = new ResultItem();
-        resultItem.setType(leftItem.getType());
+        ResultItem resultItem = new ResultItem(leftItem.getType());
+        //resultItem.setItemMeta(leftItem.getItemMeta().clone());
         UtilEnchantment.combineEnchantments(controller, leftItem, rightItem, resultItem);
 
-        if (resultItem.getType().equals(Material.ENCHANTED_BOOK)) {
-            if (leftItem.getItemMeta().getDisplayName().equals(prepareAnvilEvent.getInventory().getRenameText())) {
+        if (leftItem.getType().equals(Material.ENCHANTED_BOOK)) {
+            if (prepareAnvilEvent.getInventory().getRenameText() == null && leftItem.getItemMeta().getDisplayName().equals(prepareAnvilEvent.getInventory().getRenameText())) {
                 resultItem.getItemMeta().setDisplayName(leftItem.getItemMeta().getDisplayName());
             } else {
                 resultItem.getItemMeta().setDisplayName(prepareAnvilEvent.getInventory().getRenameText());
@@ -66,10 +71,11 @@ public class Anvil implements Listener {
                 resultItem.setDurability(leftItem.getDurability());
             } else {
                 short max = leftItem.getType().getMaxDurability();
-                int durability = (max - ((max - leftItem.getDurability()) + (max - rightItem.getDurability()) + max/20));
-                resultItem.setDurability(durability<0?0:(short)durability);
+                int durability = (max - ((max - leftItem.getDurability()) + (max - rightItem.getDurability()) + max / 20));
+                resultItem.setDurability(durability < 0 ? 0 : (short) durability);
             }
         }
+        System.out.println("[DEBUG] Result has ItemMeta? " + resultItem.hasItemMeta());
         return resultItem;
     }
 }

@@ -1,7 +1,7 @@
 name: k4llyEnchant-MC1.12
 version: 0.1.0.0-Beta
 author: K4LLy
-main: de.k4lly.enchant.Main
+main: main.java.de.k4lly.enchant.Main
 commands:
   kEVersion:
     description: Shows the actual Version of this Plugin.
