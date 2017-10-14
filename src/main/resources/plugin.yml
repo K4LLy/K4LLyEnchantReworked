@@ -1,5 +1,5 @@
 name: k4llyEnchant-MC1.12
-version: 0.1.0.0-Beta
+version: 1.0.0
 author: K4LLy
 main: main.java.de.k4lly.enchant.Main
 commands:

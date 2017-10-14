@@ -1,8 +1,10 @@
 package main.java.de.k4lly.enchant.objects;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import main.java.de.k4lly.enchant.controller.PluginController;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -71,35 +73,56 @@ public class UtilEnchantment {
         return words.length == 3 ? words[0] + " " + words[1] : words [0];
     }
 
-    public static void combineEnchantments(PluginController controller,ItemStack leftItem, ItemStack rightItem, ResultItem resultItem) {
+    public static Boolean hasConfliction(ItemMeta meta, Enchantment enchantment, Boolean isEnchantedBook) {
+        if (isEnchantedBook) {
+            for (Enchantment ench : ((EnchantmentStorageMeta) meta).getStoredEnchants().keySet()) {
+                if (enchantment != ench && enchantment.conflictsWith(ench)) {
+                    return true;
+                }
+            }
+        } else {
+            for (Enchantment ench : meta.getEnchants().keySet()) {
+                if (enchantment != ench && enchantment.conflictsWith(ench)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static void combineEnchantments(PluginController controller, ItemStack leftItem, ItemStack rightItem, ItemMeta resultMeta) {
         if (UtilMaterial.isEnchantedBook(leftItem.getType())) {
-            combineBooks(controller, leftItem, rightItem, resultItem);
+            combineBooks(controller, leftItem, rightItem, (EnchantmentStorageMeta) resultMeta);
         } else if (UtilMaterial.isEnchantable(leftItem.getType()) && UtilMaterial.isEnchantedBook(rightItem.getType())) {
-            combineItemWithBook(controller, leftItem, rightItem, resultItem);
+            combineItemWithBook(controller, leftItem, rightItem, resultMeta);
         } else if ((UtilMaterial.isEnchantable(leftItem.getType()) && UtilMaterial.isEnchantable(rightItem.getType()))) {
-            combineItems(controller, leftItem, rightItem, resultItem);
+            combineItems(controller, leftItem, rightItem, resultMeta);
         }
     }
 
-    private static void combineBooks(PluginController controller, ItemStack leftBook, ItemStack rightBook, ResultItem resultItem) {
+    private static void combineBooks(PluginController controller, ItemStack leftBook, ItemStack rightBook, EnchantmentStorageMeta resultMeta) {
         EnchantmentStorageMeta leftEnchantmentMeta = (EnchantmentStorageMeta) leftBook.getItemMeta();
         EnchantmentStorageMeta rightEnchantmentMeta = (EnchantmentStorageMeta) rightBook.getItemMeta();
 
-        for (Enchantment enchantment : Enchantment.values()) {
-            if (leftEnchantmentMeta.hasStoredEnchant(enchantment) && rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) == rightEnchantmentMeta.getStoredEnchantLevel(enchantment) &&
-                        leftEnchantmentMeta.getStoredEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
-                    System.out.println("[DEBUG] increased Enchantment.");
-                    resultItem.addEnchantment(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment) + 1);
-                } else if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) >= rightEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment));
-                } else if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) < rightEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, rightEnchantmentMeta.getStoredEnchantLevel(enchantment));
+        for (Enchantment leftEnchantment : leftEnchantmentMeta.getEnchants().keySet()) {
+            for (Enchantment rightEnchantment : rightEnchantmentMeta.getStoredEnchants().keySet()) {
+                if (leftEnchantmentMeta.hasStoredEnchant(rightEnchantment) && rightEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
+                    if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) == rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment) && leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) < controller.getMain().getConfig().getInt(leftEnchantment.getName())) {
+                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) + 1, true);
+                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) >= rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment), true);
+                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) < rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(rightEnchantment, rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+                    }
+                } else if (!rightEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
+                    if (!hasConfliction(resultMeta, leftEnchantment, false)) {
+                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment), true);
+                    }
+                } else if (!leftEnchantmentMeta.hasStoredEnchant(rightEnchantment)) {
+                    if (!hasConfliction(resultMeta, rightEnchantment, false)) {
+                        resultMeta.addEnchant(rightEnchantment, rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+                    }
                 }
-            } else if (leftEnchantmentMeta.hasStoredEnchant(enchantment) && !rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment));
-            } else if (!leftEnchantmentMeta.hasStoredEnchant(enchantment) && rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, rightEnchantmentMeta.getStoredEnchantLevel(enchantment));
             }
         }
         //TODO: Add Custom Enchantments
@@ -107,23 +130,29 @@ public class UtilEnchantment {
         //checkCEConfliction(itemLeft, itemRight);
     }
 
-    private static void combineItemWithBook(PluginController controller, ItemStack item, ItemStack book, ResultItem resultItem) {
+    private static void combineItemWithBook(PluginController controller, ItemStack item, ItemStack book, ItemMeta resultMeta) {
         ItemMeta itemItemMeta = item.getItemMeta();
         EnchantmentStorageMeta bookEnchantmentMeta = (EnchantmentStorageMeta) book.getItemMeta();
 
-        for (Enchantment enchantment : Enchantment.values()) {
-            if (itemItemMeta.hasEnchant(enchantment) && bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                if (itemItemMeta.getEnchantLevel(enchantment) == bookEnchantmentMeta.getStoredEnchantLevel(enchantment) && itemItemMeta.getEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
-                    resultItem.addEnchantment(enchantment, itemItemMeta.getEnchantLevel(enchantment) + 1);
-                } else if (itemItemMeta.getEnchantLevel(enchantment) >= bookEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, itemItemMeta.getEnchantLevel(enchantment));
-                } else if (itemItemMeta.getEnchantLevel(enchantment) < bookEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, bookEnchantmentMeta.getStoredEnchantLevel(enchantment));
+        for (Enchantment leftEnchantment : itemItemMeta.getEnchants().keySet()) {
+            for (Enchantment rightEnchantment : bookEnchantmentMeta.getStoredEnchants().keySet()) {
+                if (itemItemMeta.hasEnchant(rightEnchantment) && bookEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
+                    if (itemItemMeta.getEnchantLevel(leftEnchantment) == bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment) && itemItemMeta.getEnchantLevel(leftEnchantment) < controller.getMain().getConfig().getInt(leftEnchantment.getName())) {
+                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment) + 1, true);
+                    } else if (itemItemMeta.getEnchantLevel(leftEnchantment) >= bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment), true);
+                    } else if (itemItemMeta.getEnchantLevel(leftEnchantment) < bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(rightEnchantment, bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+                    }
+                } else if (!bookEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
+                    if (!hasConfliction(resultMeta, leftEnchantment, false)) {
+                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment), true);
+                    }
+                } else if (!itemItemMeta.hasEnchant(rightEnchantment)) {
+                    if (!hasConfliction(resultMeta, rightEnchantment, false) && rightEnchantment.canEnchantItem(item)) {
+                        resultMeta.addEnchant(rightEnchantment, bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+                    }
                 }
-            } else if (itemItemMeta.hasEnchant(enchantment) && !bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, itemItemMeta.getEnchantLevel(enchantment));
-            } else if (!itemItemMeta.hasEnchant(enchantment) && bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, bookEnchantmentMeta.getStoredEnchantLevel(enchantment));
             }
         }
         //TODO: Add Custom Enchantmentsa
@@ -131,23 +160,29 @@ public class UtilEnchantment {
         //checkCEConfliction(itemLeft, itemRight);
     }
 
-    private static void combineItems(PluginController controller, ItemStack leftItem, ItemStack rightItem, ResultItem resultItem) {
+    private static void combineItems(PluginController controller, ItemStack leftItem, ItemStack rightItem, ItemMeta resultMeta) {
         ItemMeta leftItemMeta = leftItem.getItemMeta();
         ItemMeta rightItemMeta = rightItem.getItemMeta();
 
-        for (Enchantment enchantment : Enchantment.values()) {
-            if (leftItemMeta.hasEnchant(enchantment) && rightItemMeta.hasEnchant(enchantment)) {
-                if (leftItemMeta.getEnchantLevel(enchantment) == rightItemMeta.getEnchantLevel(enchantment) && leftItemMeta.getEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
-                    resultItem.addEnchantment(enchantment, leftItemMeta.getEnchantLevel(enchantment) + 1);
-                } else if (leftItemMeta.getEnchantLevel(enchantment) >= rightItemMeta.getEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, leftItemMeta.getEnchantLevel(enchantment));
-                } else if (leftItemMeta.getEnchantLevel(enchantment) < rightItemMeta.getEnchantLevel(enchantment)) {
-                    resultItem.addEnchantment(enchantment, rightItemMeta.getEnchantLevel(enchantment));
+        for (Enchantment leftEnchantment : leftItemMeta.getEnchants().keySet()) {
+            for (Enchantment rightEnchantment : rightItemMeta.getEnchants().keySet()) {
+                if (leftItemMeta.hasEnchant(rightEnchantment) && rightItemMeta.hasEnchant(leftEnchantment)) {
+                    if (leftItemMeta.getEnchantLevel(leftEnchantment) == rightItemMeta.getEnchantLevel(rightEnchantment) && leftItemMeta.getEnchantLevel(leftEnchantment) < controller.getMain().getConfig().getInt(leftEnchantment.getName())) {
+                        resultMeta.addEnchant(leftEnchantment, leftItemMeta.getEnchantLevel(leftEnchantment) + 1, true);
+                    } else if (leftItemMeta.getEnchantLevel(leftEnchantment) >= rightItemMeta.getEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(leftEnchantment, leftItemMeta.getEnchantLevel(leftEnchantment), true);
+                    } else if (leftItemMeta.getEnchantLevel(leftEnchantment) < rightItemMeta.getEnchantLevel(rightEnchantment)) {
+                        resultMeta.addEnchant(rightEnchantment, rightItemMeta.getEnchantLevel(rightEnchantment), true);
+                    }
+                } else if (!rightItemMeta.hasEnchant(leftEnchantment)) {
+                    if (!hasConfliction(resultMeta, leftEnchantment, false)) {
+                        resultMeta.addEnchant(leftEnchantment, leftItemMeta.getEnchantLevel(leftEnchantment), true);
+                    }
+                } else if (!leftItemMeta.hasEnchant(rightEnchantment)) {
+                    if (!hasConfliction(resultMeta, rightEnchantment, false)) {
+                        resultMeta.addEnchant(rightEnchantment, rightItemMeta.getEnchantLevel(rightEnchantment), true);
+                    }
                 }
-            } else if (leftItemMeta.hasEnchant(enchantment) && !rightItemMeta.hasEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, leftItemMeta.getEnchantLevel(enchantment));
-            } else if (!leftItemMeta.hasEnchant(enchantment) && rightItemMeta.hasEnchant(enchantment)) {
-                resultItem.addEnchantment(enchantment, rightItemMeta.getEnchantLevel(enchantment));
             }
         }
         //TODO: Add Custom Enchantments

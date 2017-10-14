@@ -43,8 +43,8 @@ public class Anvil implements Listener {
 
     public ItemStack resultItem(ItemStack leftItem, ItemStack rightItem, PrepareAnvilEvent prepareAnvilEvent) throws Exception {
         ResultItem resultItem = new ResultItem(leftItem.getType());
-        //resultItem.setItemMeta(leftItem.getItemMeta().clone());
-        UtilEnchantment.combineEnchantments(controller, leftItem, rightItem, resultItem);
+        ItemMeta resultMeta = resultItem.getItemMeta();
+        UtilEnchantment.combineEnchantments(controller, leftItem, rightItem, resultMeta);
 
         if (leftItem.getType().equals(Material.ENCHANTED_BOOK)) {
             if (prepareAnvilEvent.getInventory().getRenameText() == null && leftItem.getItemMeta().getDisplayName().equals(prepareAnvilEvent.getInventory().getRenameText())) {
@@ -75,7 +75,7 @@ public class Anvil implements Listener {
                 resultItem.setDurability(durability < 0 ? 0 : (short) durability);
             }
         }
-        System.out.println("[DEBUG] Result has ItemMeta? " + resultItem.hasItemMeta());
+        resultItem.setItemMeta(resultMeta);
         return resultItem;
     }
 }
