@@ -42,7 +42,7 @@ public class Anvil implements Listener {
     }
 
     public ItemStack resultItem(ItemStack leftItem, ItemStack rightItem, PrepareAnvilEvent prepareAnvilEvent) throws Exception {
-        ResultItem resultItem = new ResultItem(leftItem.getType());
+        ItemStack resultItem = new ItemStack(leftItem.getType());
         ItemMeta resultMeta = resultItem.getItemMeta();
         UtilEnchantment.combineEnchantments(controller, leftItem, rightItem, resultMeta);
 
