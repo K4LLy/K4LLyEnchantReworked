@@ -104,26 +104,25 @@ public class UtilEnchantment {
         EnchantmentStorageMeta leftEnchantmentMeta = (EnchantmentStorageMeta) leftBook.getItemMeta();
         EnchantmentStorageMeta rightEnchantmentMeta = (EnchantmentStorageMeta) rightBook.getItemMeta();
 
-        for (Enchantment leftEnchantment : leftEnchantmentMeta.getEnchants().keySet()) {
-            for (Enchantment rightEnchantment : rightEnchantmentMeta.getStoredEnchants().keySet()) {
-                if (leftEnchantmentMeta.hasStoredEnchant(rightEnchantment) && rightEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
-                    if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) == rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment) && leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) < controller.getMain().getConfig().getInt(leftEnchantment.getName())) {
-                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) + 1, true);
-                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) >= rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
-                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment), true);
-                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment) < rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
-                        resultMeta.addEnchant(rightEnchantment, rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+
+        for (Enchantment enchantment : Enchantment.values()) {
+                if (leftEnchantmentMeta.hasStoredEnchant(enchantment) && rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                    if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) == rightEnchantmentMeta.getStoredEnchantLevel(enchantment) && leftEnchantmentMeta.getStoredEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
+                        resultMeta.addStoredEnchant(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment) + 1, true);
+                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) >= rightEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
+                         resultMeta.addStoredEnchant(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
+                    } else if (leftEnchantmentMeta.getStoredEnchantLevel(enchantment) < rightEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
+                        resultMeta.addStoredEnchant(enchantment, rightEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
                     }
-                } else if (!rightEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
-                    if (!hasConfliction(resultMeta, leftEnchantment, false)) {
-                        resultMeta.addEnchant(leftEnchantment, leftEnchantmentMeta.getStoredEnchantLevel(leftEnchantment), true);
+                } else if (leftEnchantmentMeta.hasStoredEnchant(enchantment) && !rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                    if (!hasConfliction(resultMeta, enchantment, false)) {
+                         resultMeta.addStoredEnchant(enchantment, leftEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
                     }
-                } else if (!leftEnchantmentMeta.hasStoredEnchant(rightEnchantment)) {
-                    if (!hasConfliction(resultMeta, rightEnchantment, false)) {
-                        resultMeta.addEnchant(rightEnchantment, rightEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
+                } else if (!leftEnchantmentMeta.hasStoredEnchant(enchantment) && rightEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                    if (!hasConfliction(resultMeta, enchantment, false)) {
+                        resultMeta.addStoredEnchant(enchantment, rightEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
                     }
                 }
-            }
         }
         //TODO: Add Custom Enchantments
         //addCustomEnchantment(itemLeft, itemRight);
@@ -134,24 +133,22 @@ public class UtilEnchantment {
         ItemMeta itemItemMeta = item.getItemMeta();
         EnchantmentStorageMeta bookEnchantmentMeta = (EnchantmentStorageMeta) book.getItemMeta();
 
-        for (Enchantment leftEnchantment : itemItemMeta.getEnchants().keySet()) {
-            for (Enchantment rightEnchantment : bookEnchantmentMeta.getStoredEnchants().keySet()) {
-                if (itemItemMeta.hasEnchant(rightEnchantment) && bookEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
-                    if (itemItemMeta.getEnchantLevel(leftEnchantment) == bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment) && itemItemMeta.getEnchantLevel(leftEnchantment) < controller.getMain().getConfig().getInt(leftEnchantment.getName())) {
-                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment) + 1, true);
-                    } else if (itemItemMeta.getEnchantLevel(leftEnchantment) >= bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
-                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment), true);
-                    } else if (itemItemMeta.getEnchantLevel(leftEnchantment) < bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment)) {
-                        resultMeta.addEnchant(rightEnchantment, bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
-                    }
-                } else if (!bookEnchantmentMeta.hasStoredEnchant(leftEnchantment)) {
-                    if (!hasConfliction(resultMeta, leftEnchantment, false)) {
-                        resultMeta.addEnchant(leftEnchantment, itemItemMeta.getEnchantLevel(leftEnchantment), true);
-                    }
-                } else if (!itemItemMeta.hasEnchant(rightEnchantment)) {
-                    if (!hasConfliction(resultMeta, rightEnchantment, false) && rightEnchantment.canEnchantItem(item)) {
-                        resultMeta.addEnchant(rightEnchantment, bookEnchantmentMeta.getStoredEnchantLevel(rightEnchantment), true);
-                    }
+        for (Enchantment enchantment : Enchantment.values()) {
+            if (itemItemMeta.hasEnchant(enchantment) && bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                if (itemItemMeta.getEnchantLevel(enchantment) == bookEnchantmentMeta.getStoredEnchantLevel(enchantment) && itemItemMeta.getEnchantLevel(enchantment) < controller.getMain().getConfig().getInt(enchantment.getName())) {
+                    resultMeta.addEnchant(enchantment, itemItemMeta.getEnchantLevel(enchantment) + 1, true);
+                } else if (itemItemMeta.getEnchantLevel(enchantment) >= bookEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
+                    resultMeta.addEnchant(enchantment, itemItemMeta.getEnchantLevel(enchantment), true);
+                } else if (itemItemMeta.getEnchantLevel(enchantment) < bookEnchantmentMeta.getStoredEnchantLevel(enchantment)) {
+                    resultMeta.addEnchant(enchantment, bookEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
+                }
+            } else if (itemItemMeta.hasEnchant(enchantment) && !bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                if (!hasConfliction(resultMeta, enchantment, false)) {
+                    resultMeta.addEnchant(enchantment, itemItemMeta.getEnchantLevel(enchantment), true);
+                }
+            } else if (!itemItemMeta.hasEnchant(enchantment) && bookEnchantmentMeta.hasStoredEnchant(enchantment)) {
+                if (!hasConfliction(resultMeta, enchantment, false) && enchantment.canEnchantItem(item)) {
+                    resultMeta.addEnchant(enchantment, bookEnchantmentMeta.getStoredEnchantLevel(enchantment), true);
                 }
             }
         }
